@@ -1,5 +1,4 @@
 CREATE DATABASE ex_basicos;
-
 USE ex_basicos;
 
 CREATE TABLE produto(
@@ -44,10 +43,21 @@ INSERT INTO cliente VALUES (25, 'carlos ','niteroi','RJ');
 INSERT INTO estado VALUES (1, 'nordeste', 'RN', 'Rio Grande Do Norte');
 INSERT INTO estado VALUES (16, 'sudeste' ,'SP', 'Sao Paulo' );
 
-SELECT numero FROM filial where abertura >ALL (SELECT abertura FROM filial WHERE endereco LIKE "Sao Carlos" AND endereco LIKE "Recife");
+select numero from filial where ENDERECO LIKE 'Recife' and abertura > any(select abertura from filial where endereco like '%São Carlos%');
 
-SELECT * FROM cliente WHERE estado IN ( SELECT sigla FROM estado WHERE regiao like "nordeste") ;
+
+SELECT * FROM cliente WHERE estado IN ( SELECT sigla FROM estado WHERE regiao like 'nordeste') ;
 
 SELECT * FROM produto WHERE preco = (SELECT MAX(preco) AS maximo FROM produto) ;
 
 SELECT * FROM produto WHERE preco >any ( SELECT AVG(preco) as media FROM produto);
+
+select nome from produto where id_produto IN (select produto from pedido where desconto > 0.25);
+
+CREATE TABLE empregado (
+id bigint not null auto_increment,
+nome_e varchar(50),
+sobrenome varchar(50),
+funcao
+
+);
