@@ -7,34 +7,27 @@
  Não preocupe-se com os saldos que por eventualidade possuam o valor
  null. DICA: a sub-consulta será no lugar de uma tabela,
  ademais podem haver várias sub-consultas para as colunas desta tabela. */
- use compubras;
- select distinct cl.nome , sum(total2014 + total2015) as total from cliente cl 
- inner join pedido pd on cl.CodCliente = pd.CodCliente inner join itempedido it on it.codPedido = pd.CodPedido 
-inner join produto pr on it.CodProduto = pr.CodProduto where pd.CodPedido in 
-(select pd.CodPedido sum(it.quantidade*pr.valorUnitario) as total2014 from  pedido pd where year(dataPedido) = 2014 group by pd.CodPedido  
-(select pd.CodPedido sum(it.quantidade*pr.valorUnitario) as total2015 from  pedido pd where year(dataPedido) = 2015)group by pd.CodPedido) 
-group by cl.codCliente;
 
- 
- 
- select distinct cl.nome , sum(it.quantidade*pr.valorUnitario) as soma from cliente cl 
- inner join pedido pd on cl.CodCliente = pd.CodCliente inner join itempedido it on it.codPedido = pd.CodPedido 
- inner join produto pr on it.CodProduto = pr.CodProduto where pd.CodPedido in 
- (select  sum(it.quantidade*pr.valorUnitario) as temp2 from pedido pd where year(dataPedido) = 2014 or pd.CodPedido in
- (select  sum(it.quantidade*pr.valorUnitario) as temp from pedido pd where year(dataPedido) = 2015)  ) 
- group by cl.codCliente;
- 
- 
- 
- 
- select distinct cl.nome , sum(it.quantidade*pr.valorUnitario) as soma from cliente cl 
- inner join pedido pd on cl.CodCliente = pd.CodCliente inner join itempedido it on it.codPedido = pd.CodPedido 
- inner join produto pr on it.CodProduto = pr.CodProduto left join  
- (select  sum(it.quantidade*pr.valorUnitario) as temp2 from pedido pd where year(dataPedido) = 2014 or pd.CodPedido in
- (select  sum(it.quantidade*pr.valorUnitario) as temp from pedido pd where year(dataPedido) = 2015)) temp on it.codproduto = temp.codProduto 
- group by cl.codCliente;
- 
-
- 
+SELECT c.nome,
+       (pedido2014.soma + pedido2015.soma) AS "Total da soma",
+       (pedido2014.soma - pedido2015.soma) AS "Diferenca"
+FROM cliente c
+INNER JOIN
+  (SELECT sum(it.quantidade * pr.ValorUnitario) AS soma,
+          pd.codCliente
+   FROM pedido pd
+   INNER JOIN itempedido it ON it.codPedido = pd.CodPedido
+   INNER JOIN produto pr ON it.CodProduto = pr.CodProduto
+   AND year(pd.dataPedido) = 2014
+   GROUP BY pd.codCliente) AS pedido2014 ON c.CodCliente = pedido2014.CodCliente
+INNER JOIN
+  (SELECT sum(it.quantidade * pr.ValorUnitario) AS soma,
+          pd.codCliente
+   FROM pedido pd
+   INNER JOIN itempedido it ON it.codPedido = pd.CodPedido
+   INNER JOIN produto pr ON it.CodProduto = pr.CodProduto
+   AND year(pd.dataPedido) = 2015
+   GROUP BY pd.codCliente) AS pedido2015 ON c.CodCliente = pedido2015.CodCliente
+ORDER BY diferenca DESC;
 
  
