@@ -12,3 +12,5 @@ inner join vendedor v on pd.codvendedor = v.codvendedor where v.CodVendedor IN
 /*2) Crie uma consulta que exiba o nome do cliente, endereço, cidade, UF, CEP, código do
 pedido e prazo de entrega dos pedidos que NÃO sejam de vendedores que ganham
 menos de R$ 1500,00*/
+
+SELECT cl.nome, cl.endereco,cl.cidade,cl.uf, cl.cep, pd.codpedido,pd.prazoEntrega;
