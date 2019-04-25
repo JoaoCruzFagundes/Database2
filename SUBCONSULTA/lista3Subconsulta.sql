@@ -53,12 +53,29 @@ create view pesquisa as select distinct v.nome, v.salarioFixo, v.faixaComissao f
  /*8) Exiba um ranking com o nome do vendedor e o total vendido por ele no ano de 2014. 
  Além disso, o total devem ter o valor exibido arredondado (2 números depois da vírgula).
  A consulta externa é em vendedor*/
- 
- 
- 
+ select v.nome, temp.vendido from vendedor v join
+ (select pd.codvendedor, round(coalesce(sum(Quantidade* valorUnitario))) as vendido from pedido pd 
+ join itempedido it on it.codpedido= pd.codpedido join
+ produto pr on it.codproduto = pr.codproduto group by pd.codvendedor) as temp on v.codvendedor = temp.codvendedor;
+
  
  /*9) Exiba o código do produto, nome e a quantidade vendida dos produtos que tiveram pedido s entre os dias 12/08/2014 e 27/10/2014.
- Os resultados devem ser ordenados pela quantidade e a consulta externa é na tabela produto.
-*/
+ Os resultados devem ser ordenados pela quantidade e a consulta externa é na tabela produto.*/
+create view pedidos2014 as select distinct pr.codproduto, pr.descricao , it.quantidade from produto pr join itempedido it on it.codproduto =pr.codproduto where it.codpedido in 
+ (select pd.codpedido from pedido pd where 
+ year(datapedido)=2014 and month(datapedido)>=08 and day(datapedido)>=12 and month(datapedido)<=10 and day(datapedido)<=27) order by it.quantidade;
  
- 
+select * from pedidos2014;
+
+/*10) Crie uma consulta que retorne o nome do cliente e o total comprado por este no ano de 2014 e no ano de 2015.
+ A consulta também deve retornar o saldo da diferença entre o total comprado no ano de 2015 e o total de 2014, ordenada por este saldo.
+ Não preocupe-se com os saldos que por eventualidade possuam o valor null. 
+DICA: a sub-consulta será no lugar de uma tabela, ademais podem haver várias sub-consultas para as colunas desta tabela.*/
+select cl.nome, temp15.total2015, temp14.total2014, sum(total2015 - total2014) as Diferença from cliente cl join
+(select pd.codcliente, sum(Quantidade* valorUnitario) as total2015 from pedido pd join
+itempedido it on pd.codpedido = it.codpedido join 
+produto pr on pr.codproduto = it.codproduto where year(datapedido)=2015 group by pd.codcliente) as temp15 on cl.codcliente=temp15.codcliente join
+(select pd.codcliente, sum(Quantidade* valorUnitario) as total2014 from pedido pd join
+itempedido it on pd.codpedido = it.codpedido join 
+produto pr on pr.codproduto = it.codproduto where year(datapedido)=2014 group by pd.codcliente) as temp14 on cl.codcliente = temp14.codcliente 
+group by cl.nome order by Diferença desc; 
