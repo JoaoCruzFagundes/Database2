@@ -71,7 +71,7 @@ select * from pedidos2014;
  A consulta também deve retornar o saldo da diferença entre o total comprado no ano de 2015 e o total de 2014, ordenada por este saldo.
  Não preocupe-se com os saldos que por eventualidade possuam o valor null. 
 DICA: a sub-consulta será no lugar de uma tabela, ademais podem haver várias sub-consultas para as colunas desta tabela.*/
-select cl.nome, temp15.total2015, temp14.total2014, sum(total2015 - total2014) as Diferença from cliente cl join
+select cl.nome, temp15.total2015, temp14.total2014, sum(total2015 - total2014) as Diferença from cliente cl join 
 (select pd.codcliente, sum(Quantidade* valorUnitario) as total2015 from pedido pd join
 itempedido it on pd.codpedido = it.codpedido join 
 produto pr on pr.codproduto = it.codproduto where year(datapedido)=2015 group by pd.codcliente) as temp15 on cl.codcliente=temp15.codcliente join
@@ -79,3 +79,38 @@ produto pr on pr.codproduto = it.codproduto where year(datapedido)=2015 group by
 itempedido it on pd.codpedido = it.codpedido join 
 produto pr on pr.codproduto = it.codproduto where year(datapedido)=2014 group by pd.codcliente) as temp14 on cl.codcliente = temp14.codcliente 
 group by cl.nome order by Diferença desc; 
+
+create view e2014 as select pd.codcliente, sum(Quantidade* valorUnitario) as total2014 from pedido pd join
+itempedido it on pd.codpedido = it.codpedido join 
+produto pr on pr.codproduto = it.codproduto where year(datapedido)=2014 group by pd.codcliente;
+create view e2015 as select pd.codcliente, sum(Quantidade* valorUnitario) as total2015 from pedido pd join
+itempedido it on pd.codpedido = it.codpedido join 
+produto pr on pr.codproduto = it.codproduto where year(datapedido)=2015 group by pd.codcliente;
+
+create view teste as select cl.nome, total2014,total2015, sum(total2015 - total2014) as diferenca from e2014 
+join e2015 on e2014.codcliente = e2015.codcliente 
+join cliente cl on e2014.codcliente = cl.codcliente group by cl.nome;
+drop view teste;
+select * from teste;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
