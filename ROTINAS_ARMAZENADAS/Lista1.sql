@@ -33,25 +33,101 @@ cliente e dia da semana para entrega (função criada).*/
 delimiter $$
 CREATE FUNCTION ex2(pegaData date) returns varchar(255) deterministic
 begin 
-declare resposta varchar(100);
+declare resposta2 varchar(100);
 case weekday(pegaData) 
-when 0 then set resposta = "0 - segunda";
-when 1 then set resposta = "1 - terça";
-when 2 then set resposta = "2 - quarta";
-when 3 then set resposta = "3 - quinta";
-when 4 then set resposta = "4 - sexta";
-when 5 then set resposta = "5 - sabado";
-when 6 then set resposta = "6 - domingo";
+when 0 then set resposta2 = "0 - segunda";
+when 1 then set resposta2 = "1 - terça";
+when 2 then set resposta2 = "2 - quarta";
+when 3 then set resposta2 = "3 - quinta";
+when 4 then set resposta2 = "4 - sexta";
+when 5 then set resposta2 = "5 - sabado";
+when 6 then set resposta2 = "6 - domingo";
 end case;
 return resposta;
 end$$
 delimiter ;
 select distinct pd.codpedido, cl.nome, ex2(pd.datapedido) from pedido pd join cliente cl on pd.codcliente = cl.codcliente order by cl.nome asc ;
-
+select * from cliente;
 /*3. Crie uma função para retornar o gentílico dos clientes de acordo com o estado onde moram
 (gaúcho, catarinense ou paranaense), o parâmetro de entrada deve ser a sigla do estado. Para
 testar a função crie uma consulta que liste o nome do cliente e gentílico (função criada).*/
 delimiter $$
 create function ex3(unidFed varchar(3)) returns varchar(255) deterministic
 begin
+declare resposta3 varchar(100);
+case unidFed 
+when "RS" then set resposta3 = "Rio Grande do Sul";
+when "SC" then set resposta3 = "Santa Catarina";
+when "AC" then set resposta3 = "Acre";
+when "AL" then set resposta3 = "Alagoas";
+when "AP" then set resposta3 = "Amapa";
+when "AM" then set resposta3 = "Amazonas";
+when "BA" then set resposta3 = "Bahia";
+when "CE" then set resposta3 = "Ceara";
+when "DF" then set resposta3 = "Distrito Federal";
+when "ES" then set resposta3 = "Espirito Santo";
+when "GO" then set resposta3 = "Goiais";
+when "MA" then set resposta3 = "Maranhão";
+when "MT" then set resposta3 = "Mato Grosso";
+when "MS" then set resposta3 = "Mato Grosso do Sul";
+when "MG" then set resposta3 = "Minas Gerais";
+when "PA" then set resposta3 = "Pará";
+when "PB" then set resposta3 = "Paraíba";
+when "PR" then set resposta3 = "Paraná";
+when "PE" then set resposta3 = "Pernambuco";
+when "PI" then set resposta3 = "Piauí";
+when "RJ" then set resposta3 = "Rio de Janeiro";
+when "RN" then set resposta3 = "Rio Grande do Norte";
+when "RO" then set resposta3 = "Rondônia";
+when "RR" then set resposta3 = "Roraima";
+when "SP" then set resposta3 = "São Paulo";
+when "SE" then set resposta3 = "Sergipe";
+when "TO" then set resposta3 = "Tocantins";
+END case;
+return resposta3;
+end$$
+delimiter ;
+select cd.nome, ex3(cd.uf) as Estado from cliente cd;
+
+drop function ex3;
+
+/*4. Crie uma função que retorne a Inscrição Estadual no formato #######-##. Para testar a função
+criada exiba os dados do cliente com a IE formatada corretamente utilizando a função criada.*/
+delimiter $$
+CREATE FUNCTION ex4(ie varchar(9)) returns varchar(10)  deterministic
+begin
+declare parte1 varchar(7);
+declare parte2 varchar(2);
+declare resposta4 varchar(20);
+select substring(ie,1,7) into parte1;
+select substring(ie,8,9) into parte2;
+set resposta4 = concat(parte1,"-",parte2);
+return resposta4;
+end$$
+delimiter ;
+
+select cd.nome, ex4(cd.ie) from cliente cd;
+
+/*5. Crie uma função que retorne o tipo de envio do pedido, se for até 3 dias será enviado por SEDEX,
+se for entre 3 e 7 dias deverá ser enviado como encomenda normal, caso seja maior que este prazo
+deverá ser utilizado uma encomenda não prioritária. Como dados de entrada recebe a data do
+pedido e o prazo de entrega e o retorno será um varchar. Note que para criar esta função você
+deverá utilizar a cláusula IF.*/
+
+delimiter $$
+CREATE FUNCTION ex5(pegaDataPedido date, pegaPrazoEntega date) returns varchar(255) not deterministic
+begin
+declare resposta5 bigint ;
+declare diasEntega varchar(10);
+set resposta5 = datediff(pegaDataPedido,pegaDataEntrega);
+if diasEntega <= 3 then set resposta5 = "Enviado por Sedex";
+elseif diasEntega>3 && diasEntrega <7 then set resposta5 = "Encomenda normal";
+else set resposta5 = "Entrega não prioritaria";
+end if;
+return resposta5;
+end$$
+delimiter ;
+select ex5(DataPedido, PrazoEntrega) from pedido;
+drop function
+
 
