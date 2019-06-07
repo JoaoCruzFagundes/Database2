@@ -115,19 +115,42 @@ pedido e o prazo de entrega e o retorno será um varchar. Note que para criar es
 deverá utilizar a cláusula IF.*/
 
 delimiter $$
-CREATE FUNCTION ex5(pegaDataPedido date, pegaPrazoEntega date) returns varchar(255) not deterministic
+CREATE FUNCTION ex5(pegaDataPedido date, pegaPrazoEntrega date) returns varchar(255) not deterministic
 begin
-declare resposta5 bigint ;
-declare diasEntega varchar(10);
-set resposta5 = datediff(pegaDataPedido,pegaDataEntrega);
-if diasEntega <= 3 then set resposta5 = "Enviado por Sedex";
-elseif diasEntega>3 && diasEntrega <7 then set resposta5 = "Encomenda normal";
+declare resposta5 varchar(255) ;
+declare diasEntrega bigint;
+set diasEntrega = datediff(pegaPrazoEntrega,pegaDataPedido);
+if (diasEntrega <= 3) then set resposta5 = "Enviado por Sedex";
+elseif (diasEntrega>3 && diasEntrega <7) then set resposta5 = "Encomenda normal";
 else set resposta5 = "Entrega não prioritaria";
 end if;
 return resposta5;
 end$$
 delimiter ;
-select ex5(DataPedido, PrazoEntrega) from pedido;
-drop function
+select ex5(PrazoEntrega,DataPedido) as entrega from pedido;
+select datediff(PrazoEntrega,DataPedido) from pedido;
+drop function ex5;
 
+/*6. Crie uma função que faça a comparação entre dois números inteiros. Caso os dois números sejam
+iguais a saída deverá ser “x é igual a y”, no qual x é o primeiro parâmetro e y o segundo parâmetro.
+Se x for maior, deverá ser exibido “x é maior que y”. Se x for menor, deverá ser exibido “x é menor
+que y”.*/
 
+delimiter $$
+create function ex6(x int ,y int) returns varchar(255) not deterministic
+begin
+declare resposta6 varchar(255) ;
+if (x>y) then set resposta6 = "X é maior que Y";
+elseif (x<y) then set resposta6 = "X é menor que Y";
+else set resposta6 = "X é igual a Y";
+end if;
+return resposta6;
+end$$
+delimiter ;
+
+/*7. Crie uma função que calcule a fórmula de bhaskara. Como parâmetro de entrada devem ser
+recebidos 3 valores (a, b e c). Ao final a função deve retornar “Os resultados calculados são x e y”,
+no qual x e y são os valores calculados.*/
+
+delimiter $$
+create function ex7(a double, b double, c double) returns 
