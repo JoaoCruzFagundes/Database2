@@ -175,20 +175,32 @@ calculada). Note que esta função deve receber 3 valores de entrada, salário f
 e o valor total vendido. Para testar essa função crie uma consulta que exiba o nome do vendedor e
 o salário total.*/
 
+delimiter $$
+create function ex8(getSalario decimal(10,2), getFaixa varchar(2), gettotal double )
+returns decimal(10,2) deterministic
+begin 
+declare resposta8 double;
+case getFaixa 
+when 'A' then return getSalario + (valor*0,20);
+when 'B' then return getSalario + (valor*0,15);
+when 'C' then return getSalario + (valor*0,1);
+when 'D' then return getSalario + (valor*0,05);
+else return -1;
+end case;
+end $$
+delimiter ;
+drop function ex8;
 
 select ex8(SalarioFixo,FaixaComissao,total) as NovoSalario
 from vendedor vd inner join pedido pd on vd.CodVendedor = pd.CodVendedor
 inner join temp2 on pd.CodPedido = aux group by aux,pd.CodVendedor;
 
-create view temp2 as (
-select sum(valor) as total,aux from (select sum(quantidade)*ValorUnitario as Valor,CodPedido as aux from itempedido ip inner join produto pr
+create view temp2 as (select sum(valor2) as total,aux from 
+(select sum(quantidade)*ValorUnitario as valor2,CodPedido as aux from itempedido ip inner join produto pr
 on pr.CodProduto = ip.CodProduto group by pr.CodProduto,ip.CodPedido order by aux) as temp group by aux);
 select * from total;
 
-select vd.FaixaComissao, vd.Salariofixo
-(select ip.codpedido, sum(ValorUnitario * Quantidade) as comissao from itempedido ip join produto pr 
-on ip.codproduto = pr.codproduto group by codPedido) as calcComissao on calcComissao.codpedido = pd.codpedido group by codvendedor;
-
+drop view temp2;
 
 
 
@@ -199,8 +211,12 @@ xxx.xxx.xxx.xxx e retorne a classe do mesmo e se é um IP válido ou inválido.*
 delimiter $$
 CREATE FUNCTION ex9(ipv4 varchar(20)) returns varchar(50) deterministic
 begin
-declare inicio varchar(3);
-select substring(ipv4,1,3) into inicio;
-if (inicio > "0" || inicio <"192") then 
+declare inicio bigint;
+declare radic varchar (255);
+set inicio = instr(ipv4,'.');
+select substring(ipv4,1,inicio) into radic;
+
 end$$
  delimiter ;
+ drop function ex9;
+select ex9("192.168.0.0");
