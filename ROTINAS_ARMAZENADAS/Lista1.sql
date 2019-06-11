@@ -153,4 +153,54 @@ recebidos 3 valores (a, b e c). Ao final a função deve retornar “Os resultad
 no qual x e y são os valores calculados.*/
 
 delimiter $$
-create function ex7(a double, b double, c double) returns 
+create function ex7(a double, b double, c double) returns varchar(255) not deterministic 
+begin 
+declare x double;
+declare y double;
+declare resposta7 varchar(255);
+if ((b*b -4*a*c)>=0) then
+set x =  (-b +SQRT(b*b -4*a*c))/2*a;
+set y = (-b -SQRT(b*b -4*a*c))/2*a;
+set resposta7 = concat("Resposta da operação é ",x," e ",y);
+else set resposta7 = "Raizes não reais";
+end if;
+return resposta7;
+end$$
+delimiter ;
+select ex7(7,8,0);
+drop function ex7;
+
+/*8. Crie uma função que retorne o valor total do salário de um vendedor (salário fixo + comissão
+calculada). Note que esta função deve receber 3 valores de entrada, salário fixo, faixa de comissão
+e o valor total vendido. Para testar essa função crie uma consulta que exiba o nome do vendedor e
+o salário total.*/
+
+
+select ex8(SalarioFixo,FaixaComissao,total) as NovoSalario
+from vendedor vd inner join pedido pd on vd.CodVendedor = pd.CodVendedor
+inner join temp2 on pd.CodPedido = aux group by aux,pd.CodVendedor;
+
+create view temp2 as (
+select sum(valor) as total,aux from (select sum(quantidade)*ValorUnitario as Valor,CodPedido as aux from itempedido ip inner join produto pr
+on pr.CodProduto = ip.CodProduto group by pr.CodProduto,ip.CodPedido order by aux) as temp group by aux);
+select * from total;
+
+select vd.FaixaComissao, vd.Salariofixo
+(select ip.codpedido, sum(ValorUnitario * Quantidade) as comissao from itempedido ip join produto pr 
+on ip.codproduto = pr.codproduto group by codPedido) as calcComissao on calcComissao.codpedido = pd.codpedido group by codvendedor;
+
+
+
+
+
+
+/*9. DESAFIO 1: Crie uma função que receba um número IPv4 (Internet Protocol version 4) no formato
+xxx.xxx.xxx.xxx e retorne a classe do mesmo e se é um IP válido ou inválido.*/
+delimiter $$
+CREATE FUNCTION ex9(ipv4 varchar(20)) returns varchar(50) deterministic
+begin
+declare inicio varchar(3);
+select substring(ipv4,1,3) into inicio;
+if (inicio > "0" || inicio <"192") then 
+end$$
+ delimiter ;

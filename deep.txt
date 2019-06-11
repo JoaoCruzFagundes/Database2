@@ -1,0 +1,16 @@
+delimiter $$
+create function ex8(idVendedor bigint) 
+returns varchar(255) not deterministic
+begin
+declare comissao double;
+declare resposta8 double;
+set comissao = (select sum(comissao) from pedido pd join
+(select ip.codpedido, sum(ValorUnitario * Quantidade) as comissao from itempedido ip join produto pr 
+on ip.codproduto = pr.codproduto group by codPedido) as calcComissao on calcComissao.codpedido = pd.codpedido 
+where pd.CodVendedor = idVendedor group by codvendedor);
+set resposta8 = concat("essa é a comissão ",comissao);
+return resposta8;
+end$$
+delimiter ;
+drop function ex8;
+select ex8(1);
