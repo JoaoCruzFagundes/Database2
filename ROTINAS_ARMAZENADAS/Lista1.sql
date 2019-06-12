@@ -159,8 +159,8 @@ declare x double;
 declare y double;
 declare resposta7 varchar(255);
 if ((b*b -4*a*c)>=0) then
-set x =  (-b +SQRT(b*b -4*a*c))/2*a;
-set y = (-b -SQRT(b*b -4*a*c))/2*a;
+set x =  (-b +SQRT(b*b -4*a*c))/(2*a);
+set y = (-b -SQRT(b*b -4*a*c))/(2*a);
 set resposta7 = concat("Resposta da operação é ",x," e ",y);
 else set resposta7 = "Raizes não reais";
 end if;
@@ -213,10 +213,67 @@ CREATE FUNCTION ex9(ipv4 varchar(20)) returns varchar(50) deterministic
 begin
 declare inicio bigint;
 declare radic varchar (255);
+declare respostaDesafio varchar(2);
 set inicio = instr(ipv4,'.');
 select substring(ipv4,1,inicio) into radic;
-
+if (inicio <4 || radic ) then set respostaDesafio = 'A'; 
+end if;
+return respostaDesafio;
 end$$
- delimiter ;
- drop function ex9;
-select ex9("192.168.0.0");
+delimiter ;
+drop function ex9;
+select ex9("1.168.0.0");
+
+
+
+/*1. Crie uma função para calcular um aumento de 10% no salário dos vendedores de faixa de comissão
+'A’. Considere o valor do salário fixo para calcular este aumento. Faça uma consulta select
+utilizando essa função.*/
+delimiter $$
+CREATE FUNCTION aumento(idVendedor bigint) returns bigint deterministic
+begin 
+declare faixa varchar(2);
+set faixa = (select vd.faixaComissao from vendedor vd where vd.codVendedor = idVendedor limit 1);
+return faixa;
+end $$
+delimiter ;
+drop function aumento;
+select aumento(CodVendedor) from vendedor;
+
+
+/*2. Crie uma função que retorne o código do produto com maior valor unitário.*/
+delimiter $$
+create procedure aumento(out cod bigint) deterministic 
+begin
+set cod = (select pr.codproduto from produto pr order by valorunitario desc limit 1);
+end $$
+delimiter ;
+drop procedure aumento;
+call aumento(@seila);
+select @seila; 
+
+/*3. Crie uma função que retorne o código, a descrição e o valor do produto com maior valor unitário. Os
+valores devem ser retornados em uma expressão: “O produto com código XXX – XXXXXXXXX
+(descrição) possui o maior valor unitário R$XXXX,XX”. Crie um select que utiliza esta função*/
+delimiter $$
+create procedure dados(out saida varchar(255)) deterministic 
+begin
+declare cod bigint;
+declare descricao varchar(255);
+declare preco decimal(10,2);
+set cod = (select pr.codproduto from produto pr order by valorunitario desc limit 1);
+set descricao = (select pr.descricao from produto pr order by valorunitario desc limit 1);
+set preco = (select pr.valorunitario from produto pr order by valorunitario desc limit 1);
+set saida = concat(cod, " - " , descricao," R$",preco);
+end $$
+delimiter ;
+drop procedure dados;
+call dados(@sei);
+select @sei; 
+
+
+
+delimiter $$
+create function dadosf(idproduto bigint, proddesc varchar(255), valor decimal(10,2))
+returns respCompleta varchar(255) deterministic 
+delimiter ;
