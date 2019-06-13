@@ -269,11 +269,50 @@ end $$
 delimiter ;
 drop procedure dados;
 call dados(@sei);
-select @sei; 
+select @sei;
 
 
 
 delimiter $$
 create function dadosf(idproduto bigint, proddesc varchar(255), valor decimal(10,2))
 returns respCompleta varchar(255) deterministic 
+delimiter ;
+
+select 
+/*4. Crie uma função que receba como parâmetros o código do produto com maior valor unitário e o
+código do produto com menor valor unitário. Utilize as funções dos exercícios 2 e 3. Retorne a
+soma dos dois.*/
+delimiter $$
+create function somaValores(idCaro bigint, idBarato bigint) returns decimal(10,2) deterministic
+begin
+declare caro decimal(10,2);
+declare barato decimal(10,2);
+declare soma decimal(10,2);
+set caro =(select valorunitario from produto where codproduto = idCaro);
+set barato = (select valorunitario from produto where codproduto = idBarato);
+set soma = (caro + barato);
+return soma;
+end $$
+delimiter ;
+select  somaValores(@seila,(select pr.codproduto from produto pr order by valorunitario asc limit 1)  ); 
+/*5. Crie uma função que retorne a média do valor unitário dos produtos. Crie uma consulta que utilize
+esta função.*/
+delimiter $$
+create function media(valor decimal(10,2)) returns decimal(10,2) deterministic 
+begin
+declare media decimal(10,2);
+set media = (select avg(valor) from produto ) ;
+return media;
+end $$
+delimiter ;
+drop function media;
+select media(pr.valorUnitario) from produto pr group by codproduto;
+
+
+/*6. Faça uma função que retorna o código do cliente com a maior quantidade de pedidos um ano/mês.
+Observe que a função deverá receber como parâmetros um ano e um mês. Deve ser exibido a
+seguinte expressão: “O cliente XXXXXXX (cód) – XXXXXXX (nome) foi o cliente que fez a maior
+quantidade de pedidos no ano XXXX mês XX com um total de XXX pedidos”.*/
+delimiter $$
+create function lista6()
 delimiter ;
