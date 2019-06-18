@@ -314,5 +314,18 @@ Observe que a função deverá receber como parâmetros um ano e um mês. Deve s
 seguinte expressão: “O cliente XXXXXXX (cód) – XXXXXXX (nome) foi o cliente que fez a maior
 quantidade de pedidos no ano XXXX mês XX com um total de XXX pedidos”.*/
 delimiter $$
-create function lista6()
+create function lista6(ano int, mes int) returns varchar(255) deterministic 
+begin 
+declare respostal6 varchar(255);
+declare nomee varchar(255);
+declare cod bigint;
+declare quantPed bigint;
+select cd.CodCliente, cd.nome, count(pd.CodPedidos) as ranking into cod,nomee,quantPed from
+pedido pd inner join cliente cd on pd.codcliente = cd.codcliente where
+month(Datapedido) = mes and year(Datapedido)=ano group by cd.CodCliente order by quantPed desc limit 1 ;
+set respostal6 = concat("O cliente", cod, "-",nomee," foi o cliente que fez a maior quantidade de pedidos no ano",ano," mes ",mes,"com o total de pedidos de",quantPed,"pedidos");
+return respostal6;
+end $$
 delimiter ;
+drop function lista6;
+select lista6(2015,08);
