@@ -25,7 +25,11 @@ return resposta;
 end$$
 DELIMITER ;
 
-select codcliente, exercice1(dataPedido) as "data" from pedido order by "data" asc;
+SELECT 
+    codcliente, EXERCICE1(dataPedido) AS 'data'
+FROM
+    pedido
+ORDER BY 'data' ASC;
 
 /*2. Retorne o número mais o nome do dia da semana (0 - Segunda) em português, como parâmetro de
 entrada receba uma data. Para testar, crie uma consulta que retorne o número do pedido, nome do
@@ -46,7 +50,13 @@ end case;
 return resposta;
 end$$
 delimiter ;
-select distinct pd.codpedido, cl.nome, ex2(pd.datapedido) from pedido pd join cliente cl on pd.codcliente = cl.codcliente order by cl.nome asc ;
+SELECT DISTINCT
+    pd.codpedido, cl.nome, EX2(pd.datapedido)
+FROM
+    pedido pd
+        JOIN
+    cliente cl ON pd.codcliente = cl.codcliente
+ORDER BY cl.nome ASC;
 select * from cliente;
 /*3. Crie uma função para retornar o gentílico dos clientes de acordo com o estado onde moram
 (gaúcho, catarinense ou paranaense), o parâmetro de entrada deve ser a sigla do estado. Para
@@ -87,7 +97,10 @@ END case;
 return resposta3;
 end$$
 delimiter ;
-select cd.nome, ex3(cd.uf) as Estado from cliente cd;
+SELECT 
+    cd.nome, EX3(cd.uf) AS Estado
+FROM
+    cliente cd;
 
 drop function ex3;
 
@@ -99,8 +112,8 @@ begin
 declare parte1 varchar(7);
 declare parte2 varchar(2);
 declare resposta4 varchar(20);
-select substring(ie,1,7) into parte1;
-select substring(ie,8,9) into parte2;
+SELECT SUBSTRING(ie, 1, 7) INTO parte1;
+SELECT SUBSTRING(ie, 8, 9) INTO parte2;
 set resposta4 = concat(parte1,"-",parte2);
 return resposta4;
 end$$
@@ -127,8 +140,14 @@ end if;
 return resposta5;
 end$$
 delimiter ;
-select ex5(PrazoEntrega,DataPedido) as entrega from pedido;
-select datediff(PrazoEntrega,DataPedido) from pedido;
+SELECT 
+    EX5(PrazoEntrega, DataPedido) AS entrega
+FROM
+    pedido;
+SELECT 
+    DATEDIFF(PrazoEntrega, DataPedido)
+FROM
+    pedido;
 drop function ex5;
 
 /*6. Crie uma função que faça a comparação entre dois números inteiros. Caso os dois números sejam
@@ -167,7 +186,7 @@ end if;
 return resposta7;
 end$$
 delimiter ;
-select ex7(7,8,0);
+SELECT EX7(7, 8, 0);
 drop function ex7;
 
 /*8. Crie uma função que retorne o valor total do salário de um vendedor (salário fixo + comissão
@@ -191,13 +210,28 @@ end $$
 delimiter ;
 drop function ex8;
 
-select ex8(SalarioFixo,FaixaComissao,total) as NovoSalario
-from vendedor vd inner join pedido pd on vd.CodVendedor = pd.CodVendedor
-inner join temp2 on pd.CodPedido = aux group by aux,pd.CodVendedor;
+SELECT 
+    EX8(SalarioFixo, FaixaComissao, total) AS NovoSalario
+FROM
+    vendedor vd
+        INNER JOIN
+    pedido pd ON vd.CodVendedor = pd.CodVendedor
+        INNER JOIN
+    temp2 ON pd.CodPedido = aux
+GROUP BY aux , pd.CodVendedor;
 
-create view temp2 as (select sum(valor2) as total,aux from 
-(select sum(quantidade)*ValorUnitario as valor2,CodPedido as aux from itempedido ip inner join produto pr
-on pr.CodProduto = ip.CodProduto group by pr.CodProduto,ip.CodPedido order by aux) as temp group by aux);
+CREATE VIEW temp2 AS
+    (SELECT 
+        SUM(valor2) AS total, aux
+    FROM
+        (SELECT 
+            SUM(quantidade) * ValorUnitario AS valor2, CodPedido AS aux
+        FROM
+            itempedido ip
+        INNER JOIN produto pr ON pr.CodProduto = ip.CodProduto
+        GROUP BY pr.CodProduto , ip.CodPedido
+        ORDER BY aux) AS temp
+    GROUP BY aux);
 select * from total;
 
 drop view temp2;
@@ -222,7 +256,7 @@ return respostaDesafio;
 end$$
 delimiter ;
 drop function ex9;
-select ex9("1.168.0.0");
+SELECT EX9('1.168.0.0');
 
 
 
@@ -230,33 +264,36 @@ select ex9("1.168.0.0");
 'A’. Considere o valor do salário fixo para calcular este aumento. Faça uma consulta select
 utilizando essa função.*/
 delimiter $$
-CREATE FUNCTION aumento(idVendedor bigint) returns bigint deterministic
+CREATE FUNCTION ex11(idVendedor bigint) returns bigint deterministic
 begin 
 declare faixa varchar(2);
 set faixa = (select vd.faixaComissao from vendedor vd where vd.codVendedor = idVendedor limit 1);
 return faixa;
 end $$
 delimiter ;
-drop function aumento;
-select aumento(CodVendedor) from vendedor;
+drop function ex11;
+SELECT 
+    EX11(CodVendedor)
+FROM
+    vendedor;
 
 
 /*2. Crie uma função que retorne o código do produto com maior valor unitário.*/
 delimiter $$
-create procedure aumento(out cod bigint) deterministic 
+create procedure ex12(out cod bigint) deterministic 
 begin
 set cod = (select pr.codproduto from produto pr order by valorunitario desc limit 1);
 end $$
 delimiter ;
-drop procedure aumento;
-call aumento(@seila);
-select @seila; 
+drop procedure ex12;
+call ex12(@seila);
+SELECT @seila; 
 
 /*3. Crie uma função que retorne o código, a descrição e o valor do produto com maior valor unitário. Os
 valores devem ser retornados em uma expressão: “O produto com código XXX – XXXXXXXXX
 (descrição) possui o maior valor unitário R$XXXX,XX”. Crie um select que utiliza esta função*/
 delimiter $$
-create procedure dados(out saida varchar(255)) deterministic 
+create procedure ex13(out saida varchar(255)) deterministic 
 begin
 declare cod bigint;
 declare descricao varchar(255);
@@ -267,23 +304,18 @@ set preco = (select pr.valorunitario from produto pr order by valorunitario desc
 set saida = concat(cod, " - " , descricao," R$",preco);
 end $$
 delimiter ;
-drop procedure dados;
-call dados(@sei);
-select @sei;
+drop procedure ex12;
+call ex13(@sei);
+SELECT @sei;
 
 
 
-delimiter $$
-create function dadosf(idproduto bigint, proddesc varchar(255), valor decimal(10,2))
-returns respCompleta varchar(255) deterministic 
-delimiter ;
 
-select 
 /*4. Crie uma função que receba como parâmetros o código do produto com maior valor unitário e o
 código do produto com menor valor unitário. Utilize as funções dos exercícios 2 e 3. Retorne a
 soma dos dois.*/
 delimiter $$
-create function somaValores(idCaro bigint, idBarato bigint) returns decimal(10,2) deterministic
+create function ex14(idCaro bigint, idBarato bigint) returns decimal(10,2) deterministic
 begin
 declare caro decimal(10,2);
 declare barato decimal(10,2);
@@ -294,19 +326,30 @@ set soma = (caro + barato);
 return soma;
 end $$
 delimiter ;
-select  somaValores(@seila,(select pr.codproduto from produto pr order by valorunitario asc limit 1)  ); 
+SELECT 
+    EX14(@seila,
+            (SELECT 
+                    pr.codproduto
+                FROM
+                    produto pr
+                ORDER BY valorunitario ASC
+                LIMIT 1)); 
 /*5. Crie uma função que retorne a média do valor unitário dos produtos. Crie uma consulta que utilize
 esta função.*/
 delimiter $$
-create function media(valor decimal(10,2)) returns decimal(10,2) deterministic 
+create function ex15(valor decimal(10,2)) returns decimal(10,2) deterministic 
 begin
 declare media decimal(10,2);
 set media = (select avg(valor) from produto ) ;
 return media;
 end $$
 delimiter ;
-drop function media;
-select media(pr.valorUnitario) from produto pr group by codproduto;
+drop function ex15;
+SELECT 
+    EX15(pr.valorUnitario)
+FROM
+    produto pr
+GROUP BY codproduto;
 
 
 /*6. Faça uma função que retorna o código do cliente com a maior quantidade de pedidos um ano/mês.
@@ -314,18 +357,104 @@ Observe que a função deverá receber como parâmetros um ano e um mês. Deve s
 seguinte expressão: “O cliente XXXXXXX (cód) – XXXXXXX (nome) foi o cliente que fez a maior
 quantidade de pedidos no ano XXXX mês XX com um total de XXX pedidos”.*/
 delimiter $$
-create function lista6(ano int, mes int) returns varchar(255) deterministic 
+create function ex16(ano int, mes int) returns varchar(255) deterministic 
 begin 
 declare respostal6 varchar(255);
 declare nomee varchar(255);
 declare cod bigint;
 declare quantPed bigint;
-select cd.CodCliente, cd.nome, count(pd.CodPedidos) as ranking into cod,nomee,quantPed from
+select cd.CodCliente, cd.nome, count(pd.CodPedido) as ranking into cod,nomee,quantPed from
 pedido pd inner join cliente cd on pd.codcliente = cd.codcliente where
 month(Datapedido) = mes and year(Datapedido)=ano group by cd.CodCliente order by quantPed desc limit 1 ;
-set respostal6 = concat("O cliente", cod, "-",nomee," foi o cliente que fez a maior quantidade de pedidos no ano",ano," mes ",mes,"com o total de pedidos de",quantPed,"pedidos");
+set respostal6 = concat("O cliente ", cod, " - ",nomee," foi o cliente que fez a maior quantidade de pedidos no ano",ano," mes ",mes,"com o total de pedidos de",quantPed,"pedidos");
 return respostal6;
 end $$
 delimiter ;
-drop function lista6;
-select lista6(2015,08);
+drop function ex16;
+SELECT EX16(2015, 08);
+
+
+/*7. Faça uma função que retorna a soma dos valores dos pedidos feitos por um determinado cliente.
+ Note que a função recebe por parâmetro o código de uma cliente e retorna o valor total dos pedidos deste cliente.
+ Faça a consulta utilizando Joins.*/
+ delimiter $$
+ create function ex17(cod bigint) returns decimal(10,2) not deterministic 
+ begin
+ declare gastos decimal(10,2);
+ select sum(quantidade *  valorUnitario) as total into gastos from pedido pd join itempedido it on pd.codpedido = it.codpedido 
+ join produto pr on it.codproduto=pr.codproduto where pd.codcliente = cod group by codcliente;
+ return gastos;
+ end $$
+ delimiter ;
+ SELECT EX17(2);
+ 
+ 
+ /*8. Crie 3 funções.
+  p1 A primeira deve retornar a soma da quantidade de produtos de todos os pedidos.
+  p2 A segunda, deve retornar o número total de pedidos e 
+  p3 a terceira a média dos dois valores. Por fim, 
+  p4 crie uma quarta função que chama as outras três e exibe todos os resultados concatenados*/
+ delimiter $$
+ create function ex18p1() returns bigint not deterministic
+ begin 
+ declare quantTotal bigint;
+ select sum(quantidade) as quantidades into quantTotal from itempedido;
+ return quantTotal;
+ end $$
+ delimiter ;
+ 
+ delimiter $$
+ create function ex18p2() returns bigint not deterministic 
+ begin
+ declare pedTotal bigint;
+ select count(codpedido) as sumPedido into pedTotal from pedido;
+ return pedTotal;
+ end$$
+ delimiter ;
+ 
+ delimiter $$
+ create function ex18p3() returns double not deterministic 
+ begin
+ declare media double;
+ set media = ((ex18p1(), ex18p1())/2);
+ return media;
+ end $$
+ delimiter ;
+ 
+ delimiter $$
+create function ex18p4() returns varchar(255) not deterministic 
+begin
+declare resposta varchar(255);
+set resposta = concat(ex18p1(),ex18p2(),ex18p3());
+return resposta;
+end $$
+delimiter ;
+
+select ex18p4();
+
+/*9. Crie uma função que retorna o código do vendedor com maior número de pedidos para um determinado ano/mês
+ Observe que a função deverá receber como parâmetros um ano e um mês. Deve ser exibido a seguinte expressão: 
+ “O vendedor XXXXXXX (cód) – XXXXXXX (nome) foi o vendedor que efetuou a maior quantidade de vendas no ano XXXX mês XX com um total de XXX pedidos”.*/
+
+delimiter $$
+create function ex19(ano int, mes int) returns varchar(255) deterministic 
+begin
+declare idVendedor bigint;
+declare nomeVendedor, resposta varchar(255);
+declare numPedidos bigint;
+select pd.codvendedor, vd.nome , count(codPedido) as Pedidos into idVendedor, nomeVendedor,numPedidos from pedido pd join
+vendedor vd on pd.codvendedor=vd.codvendedor where year(datapedido)=ano and month(datapedido)=mes 
+group by pd.codvendedor order by Pedidos desc limit 1;
+set resposta = concat("O vendedor ",idVendedor," – ", nomeVendedor, 
+" foi o vendedor que efetuou a maior quantidade de vendas no ano ",ano, "mês",mes, "com um total de" ,numPedidos, "pedidos");
+return resposta;
+end $$ 
+delimiter ;
+select ex19(2015,1);
+
+/*10. Crie uma função que retorne o nome e o endereço completo do cliente que fez o último pedido na loja. (Pedido com a data mais recente).*/
+
+
+create user 'joao'@'localhost' identified by 'password';
+grant select,update on compubras.* to 'joao'@'localhost';
+revoke all privileges on compubras.* from 'joao'@'localhost';
