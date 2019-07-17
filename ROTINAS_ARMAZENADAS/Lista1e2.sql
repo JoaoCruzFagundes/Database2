@@ -286,8 +286,8 @@ set cod = (select pr.codproduto from produto pr order by valorunitario desc limi
 end $$
 delimiter ;
 drop procedure ex12;
-call ex12(@seila);
-SELECT @seila; 
+call ex12(@retorno);
+SELECT @retorno; 
 
 /*3. Crie uma função que retorne o código, a descrição e o valor do produto com maior valor unitário. Os
 valores devem ser retornados em uma expressão: “O produto com código XXX – XXXXXXXXX
@@ -453,8 +453,70 @@ delimiter ;
 select ex19(2015,1);
 
 /*10. Crie uma função que retorne o nome e o endereço completo do cliente que fez o último pedido na loja. (Pedido com a data mais recente).*/
+delimiter $$
+create function ex20() returns varchar(255) deterministic
+begin 
+declare cliente varchar(100);
+declare endereco varchar(255);
+declare resposta20 varchar(255);
+select cl.nome, cl.endereco into cliente, endereco from cliente cl join pedido pd on cl.codcliente =pd.codcliente order by datapedido desc limit 1; 
+set resposta20 = concat("O ultimo cliente a comprar foi ",cliente," e seu endereço é ", endereco );
+return resposta20;
+end $$
+delimiter ;
 
+select ex20();
 
-create user 'joao'@'localhost' identified by 'password';
-grant select,update on compubras.* to 'joao'@'localhost';
-revoke all privileges on compubras.* from 'joao'@'localhost';
+/*11. Crie uma função que retorne a quantidade de pedidos realizados para clientes do Estado informado (receber o estado como parâmetro).*/
+
+delimiter $$
+create function ex21(estado varchar(100)) returns bigint deterministic 
+begin
+declare totalPedidos bigint;
+select count(pd.codpedido) into totalPedidos from pedido pd join cliente cl on pd.codcliente = cl.codcliente where cl.uf like estado; 
+return totalPedidos;
+end$$
+delimiter ;
+
+select ex21('RS');
+
+/*12. Crie uma função que retorne o valor total que é gasto com os salários dos vendedores de certa faixa de comissão. 
+(Receber a faixa de comissão por parâmetro). 
+Note que deve ser considerado o valor total dos salários, incluindo a comissão.*/
+delimiter $$
+create function ex22(comissao varchar(5)) returns decimal(15,2) not deterministic
+begin
+declare pagamentos decimal(15,2);
+declare salariobase decimal(15,2);
+declare vendas decimal (15,2);
+set salariobase = (select SUM(vd.salarioFixo) from vendedor vd where vd.faixaComissao like comissao);
+set vendas = (select sum(it.quantidade * pr.valorunitario) from itempedido it join produto pr on it.codproduto= pr.codproduto 
+join pedido pd on it.codpedido=pd.codpedido join vendedor vd on pd.codvendedor = vd.codvendedor where vd.faixaComissao like comissao);
+case comissao 
+when 'A' then set pagamentos = salariobase + (vendas*0,20);
+when 'B' then set pagamentos = salariobase + (vendas*0,15);
+when 'C' then set pagamentos = salariobase + (vendas*0,1);
+when 'D' then set pagamentos = salariobase + (vendas*0,05);
+else return -1;
+end case;
+return pagamentos ;
+end $$
+delimiter ;
+drop function ex22;
+select ex22('A');
+
+/*13. Crie uma função que mostre o cliente que fez o pedido mais caro da loja. O retorno da função deverá ser: 
+“O cliente XXXXXX efetuou o pedido XXXX (cód) em XXXX (data), o qual é o mais caro registrado até o momento no valor total de R$XXXX,XX”.
+*/
+delimiter $$
+create procedure ex23(out magnata varchar(255)) not deterministic
+begin
+set magnata =(select cl.nome, pd.codcliente,pd.datapedido,sum(quantidade * valorUnitario) as total from itempedido it join produto pr 
+on it.codproduto=pr.codproduto join pedido pd on it.codpedido = pd.codpedido join cliente cl 
+on pd.codcliente = cl.codcliente group by cl.codcliente order by total desc limit 1);  
+end$$
+delimiter ;
+call ex23(@retorno);
+select @retorno;
+
+/**/
